@@ -25,6 +25,37 @@ export const UserDetails = asyncHandler(async (req, res) => {
 
   const receiverID = user._id;
   const senderID = req.user._id;
+
+  // Check if the profile is private and not the owner
+  const isOwner = user._id.toString() === req.user._id.toString();
+  const isPrivate = user.visibility === "private";
+
+  if (isPrivate && !isOwner) {
+    // Return limited data for private profiles
+    const limitedUserData = {
+      username: user.username,
+      name: user.name,
+      picture: user.picture,
+      visibility: user.visibility,
+      bio: "This profile is private",
+      rating: user.rating,
+      status: "Connect", // Default status for private profiles
+      // Don't include sensitive information
+      skillsProficientAt: [],
+      skillsToLearn: [],
+      education: [],
+      projects: [],
+      linkedinLink: "",
+      githubLink: "",
+      portfolioLink: "",
+    };
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, limitedUserData, "Private profile - limited information available"));
+  }
+
+  // For public profiles or owner viewing their own profile
   const request = await Request.find({
     $or: [
       { sender: senderID, receiver: receiverID },
@@ -32,15 +63,15 @@ export const UserDetails = asyncHandler(async (req, res) => {
     ],
   });
 
-  // console.log("request", request);
-
   const status = request.length > 0 ? request[0].status : "Connect";
 
-  // console.log(" userDetail: ", userDetail);
-  // console.log("user", user);
+  // Remove email from the response for privacy
+  const userData = user.toObject();
+  delete userData.email;
+
   return res
     .status(200)
-    .json(new ApiResponse(200, { ...user._doc, status: status }, "User details fetched successfully"));
+    .json(new ApiResponse(200, { ...userData, status: status }, "User details fetched successfully"));
 });
 
 export const UnRegisteredUserDetails = asyncHandler(async (req, res) => {
@@ -267,6 +298,7 @@ export const registerUser = async (req, res) => {
     linkedinLink: linkedinLink,
     githubLink: githubLink,
     portfolioLink: portfolioLink,
+    visibility: req.body.visibility || "public",
     skillsProficientAt: skillsProficientAt,
     skillsToLearn: skillsToLearn,
     education: education,
@@ -291,7 +323,7 @@ export const registerUser = async (req, res) => {
 export const saveRegRegisteredUser = asyncHandler(async (req, res) => {
   console.log("******** Inside saveRegRegisteredUser Function *******");
 
-  const { name, username, linkedinLink, githubLink, portfolioLink, skillsProficientAt, skillsToLearn, picture } =
+  const { name, username, linkedinLink, githubLink, portfolioLink, skillsProficientAt, skillsToLearn, picture, visibility } =
     req.body;
 
   console.log("Body: ", req.body);
@@ -325,6 +357,7 @@ export const saveRegRegisteredUser = asyncHandler(async (req, res) => {
       skillsProficientAt: skillsProficientAt,
       skillsToLearn: skillsToLearn,
       picture: picture,
+      visibility: visibility || "public",
     }
   );
 
@@ -518,6 +551,7 @@ export const uploadPic = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, { url: picture.url }, "Picture uploaded successfully"));
 });
 
+// Update the discoverUsers function to include visibility
 export const discoverUsers = asyncHandler(async (req, res) => {
   console.log("******** Inside discoverUsers Function *******");
 
@@ -543,41 +577,34 @@ export const discoverUsers = asyncHandler(async (req, res) => {
     "Machine Learning",
   ];
 
-  // Find all the users except the current users who are proficient in the skills that the current user wants to learn and also the the users who are proficient in the web development skills and machine learning skills in the array above
-  //
-
-  //  fetch all users except the current user
-
-  const users = await User.find({ username: { $ne: req.user.username } });
-
-  // now make three seperate list of the users who are proficient in the skills that the current user wants to learn, the users who are proficient in the web development skills and the users who are proficient in the machine learning skills and others also limit the size of the array to 5;
-
-  // const users = await User.find({
-  //   skillsProficientAt: { $in: req.user.skillsToLearn },
-  //   username: { $ne: req.user.username },
-  // });
+  // Fetch all users except the current user, including visibility field
+  const users = await User.find({ username: { $ne: req.user.username } }).select(
+    "username name picture bio rating skillsProficientAt visibility"
+  );
 
   if (!users) {
     throw new ApiError(500, "Error in fetching users");
   }
+
   const usersToLearn = [];
   const webDevUsers = [];
   const mlUsers = [];
   const otherUsers = [];
 
-  // randomly suffle the users array
-
+  // Randomly shuffle the users array
   users.sort(() => Math.random() - 0.5);
 
   users.forEach((user) => {
+    const userObj = user.toObject();
+
     if (user.skillsProficientAt.some((skill) => req.user.skillsToLearn.includes(skill)) && usersToLearn.length < 5) {
-      usersToLearn.push(user);
+      usersToLearn.push(userObj);
     } else if (user.skillsProficientAt.some((skill) => webDevSkills.includes(skill)) && webDevUsers.length < 5) {
-      webDevUsers.push(user);
+      webDevUsers.push(userObj);
     } else if (user.skillsProficientAt.some((skill) => machineLearningSkills.includes(skill)) && mlUsers.length < 5) {
-      mlUsers.push(user);
+      mlUsers.push(userObj);
     } else {
-      if (otherUsers.length < 5) otherUsers.push(user);
+      if (otherUsers.length < 5) otherUsers.push(userObj);
     }
   });
 
@@ -613,4 +640,16 @@ export const sendScheduleMeet = asyncHandler(async (req, res) => {
   await sendMail(to, subject, message);
 
   return res.status(200).json(new ApiResponse(200, null, "Email sent successfully"));
+});
+
+export const updateProfileVisibility = asyncHandler(async (req, res) => {
+  const { visibility } = req.body;
+
+  if (!["public", "private"].includes(visibility)) {
+    throw new ApiError(400, "Invalid visibility option. Must be 'public' or 'private'");
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(req.user._id, { visibility }, { new: true }).select("-email");
+
+  return res.status(200).json(new ApiResponse(200, updatedUser, "Profile visibility updated successfully"));
 });

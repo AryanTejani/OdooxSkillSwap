@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { UserDetails } from "../controllers/user.controllers.js";
 import { verifyJWT_email, verifyJWT_username } from "../middlewares/verifyJWT.middleware.js";
+import { checkProfileVisibility } from "../middlewares/checkProfileVisibility.middleware.js";
 import {
   UnRegisteredUserDetails,
   saveRegUnRegisteredUser,
@@ -14,6 +15,7 @@ import {
   uploadPic,
   discoverUsers,
   sendScheduleMeet,
+  updateProfileVisibility,
 } from "../controllers/user.controllers.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -30,14 +32,16 @@ router.route("/registerUser").post(verifyJWT_email, registerUser);
 router.route("/registered/saveRegDetails").post(verifyJWT_username, saveRegRegisteredUser);
 router.route("/registered/saveEduDetail").post(verifyJWT_username, saveEduRegisteredUser);
 router.route("/registered/saveAddDetail").post(verifyJWT_username, saveAddRegisteredUser);
-// router.route("/registered/updateDetails").post(verifyJWT_username, updateRegisteredUser);
 
 // Upload Picture
 router.route("/uploadPicture").post(verifyJWT_username, upload.fields([{ name: "picture", maxCount: 1 }]), uploadPic);
 
-// get user details
-router.route("/registered/getDetails/:username").get(verifyJWT_username, UserDetails);
+// get user details - updated with visibility middleware
+router.route("/registered/getDetails/:username").get(verifyJWT_username, checkProfileVisibility, UserDetails);
 router.route("/registered/getDetails").get(verifyJWT_username, userDetailsWithoutID);
+
+// update profile visibility
+router.route("/updateVisibility").patch(verifyJWT_username, updateProfileVisibility);
 
 // get profiles for discover page
 router.route("/discover").get(verifyJWT_username, discoverUsers);

@@ -99,6 +99,16 @@ const Profile = () => {
                 <div className="misc">
                   <h1 className="profile-name" style={{ marginLeft: "2rem" }}>
                     {profileUser?.name}
+                    {profileUser?.visibility === "private" && (
+                      <span style={{ 
+                        marginLeft: "10px", 
+                        fontSize: "0.6em", 
+                        color: "#999",
+                        fontWeight: "normal"
+                      }}>
+                        🔒 Private Profile
+                      </span>
+                    )}
                   </h1>
                   {/* Rating */}
                   <div className="rating" style={{ marginLeft: "2rem" }}>

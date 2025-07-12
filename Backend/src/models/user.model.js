@@ -23,6 +23,11 @@ const userSchema = new Schema(
       type: Number,
       default: 0,
     },
+    visibility: {
+      type: String,
+      enum: ["public", "private"],
+      default: "public",
+    },
     linkedinLink: {
       type: String,
       default: "",
@@ -63,7 +68,7 @@ const userSchema = new Schema(
         },
         endDate: {
           type: Date,
-          default: null, // or you can leave it undefined
+          default: null,
         },
         score: {
           type: Number,
@@ -112,5 +117,6 @@ const userSchema = new Schema(
   },
   { timestamps: true }
 );
+
 
 export const User = mongoose.model("User", userSchema);

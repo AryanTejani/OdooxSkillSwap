@@ -23,6 +23,7 @@ const Register = () => {
     portfolioLink: "",
     githubLink: "",
     linkedinLink: "",
+    visibility: "public",
     skillsProficientAt: [],
     skillsToLearn: [],
     education: [
@@ -544,6 +545,27 @@ const Register = () => {
                   }}
                   placeholder="Enter your portfolio link"
                 />
+              </div>
+              {/* Profile Visibility */}
+              <div>
+                <label className="mt-3" style={{ color: "#3BB4A1" }}>
+                  Profile Visibility
+                </label>
+                <br />
+                <Form.Select
+                  name="visibility"
+                  value={form.visibility}
+                  onChange={handleInputChange}
+                  style={{
+                    borderRadius: "5px",
+                    border: "1px solid #3BB4A1",
+                    padding: "5px",
+                    width: "100%",
+                  }}
+                >
+                  <option value="public">Public</option>
+                  <option value="private">Private</option>
+                </Form.Select>
               </div>
               {/* Skills Proficient At */}
               <div>

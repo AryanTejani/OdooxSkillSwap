@@ -26,6 +26,7 @@ const EditProfile = () => {
     portfolioLink: "",
     githubLink: "",
     linkedinLink: "",
+    visibility: "public",
     skillsProficientAt: [],
     skillsToLearn: [],
     education: [
@@ -60,6 +61,7 @@ const EditProfile = () => {
         portfolioLink: user?.portfolioLink,
         githubLink: user?.githubLink,
         linkedinLink: user?.linkedinLink,
+        visibility: user?.visibility || "public",
         education: user?.education,
         bio: user?.bio,
         projects: user?.projects,
@@ -381,6 +383,35 @@ const EditProfile = () => {
     }
   };
 
+  const handleUpdateVisibility = async () => {
+    setSaveLoading(true);
+    try {
+      const { data } = await axios.patch("/user/updateVisibility", {
+        visibility: form.visibility,
+      });
+      toast.success("Profile visibility updated successfully");
+      // Update the user context with new visibility
+      if (user) {
+        setUser({ ...user, visibility: form.visibility });
+      }
+    } catch (error) {
+      console.log(error);
+      if (error?.response?.data?.message) {
+        toast.error(error.response.data.message);
+        if (error.response.data.message === "Please Login") {
+          localStorage.removeItem("userInfo");
+          setUser(null);
+          await axios.get("/auth/logout");
+          navigate("/login");
+        }
+      } else {
+        toast.error("Some error occurred");
+      }
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
   // const handleSubmit = async () => {
   //   const check1 = validateRegForm();
   //   const check2 = validateEduForm();
@@ -546,6 +577,30 @@ const EditProfile = () => {
                   }}
                   placeholder="Enter your portfolio link"
                 />
+              </div>
+              {/* Profile Visibility */}
+              <div>
+                <label className="mt-3" style={{ color: "#3BB4A1" }}>
+                  Profile Visibility
+                </label>
+                <br />
+                <Form.Select
+                  name="visibility"
+                  value={form.visibility}
+                  onChange={handleInputChange}
+                  style={{
+                    borderRadius: "5px",
+                    border: "1px solid #3BB4A1",
+                    padding: "5px",
+                    width: "100%",
+                  }}
+                >
+                  <option value="public">Public</option>
+                  <option value="private">Private</option>
+                </Form.Select>
+                <button className="btn btn-info mt-2 ms-1" onClick={handleUpdateVisibility} disabled={saveLoading}>
+                  {saveLoading ? <Spinner animation="border" variant="light" size="sm" /> : "Update Visibility"}
+                </button>
               </div>
               {/* Skills Proficient At */}
               <div>
