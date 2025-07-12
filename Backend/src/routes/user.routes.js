@@ -16,6 +16,7 @@ import {
   discoverUsers,
   sendScheduleMeet,
   updateProfileVisibility,
+  createRequest
 } from "../controllers/user.controllers.js";
 import { upload } from "../middlewares/multer.middleware.js";
 

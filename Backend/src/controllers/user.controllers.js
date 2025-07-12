@@ -30,17 +30,29 @@ export const UserDetails = asyncHandler(async (req, res) => {
   const isOwner = user._id.toString() === req.user._id.toString();
   const isPrivate = user.visibility === "private";
 
-  if (isPrivate && !isOwner) {
+  // Check if users are connected
+  const request = await Request.find({
+    $or: [
+      { sender: senderID, receiver: receiverID },
+      { sender: receiverID, receiver: senderID },
+    ],
+  });
+
+  const status = request.length > 0 ? request[0].status : "Connect";
+  const isConnected = request.length > 0 && request[0].status === "Connected";
+
+  // If profile is private, not the owner, and not connected, return limited data
+  if (isPrivate && !isOwner && !isConnected) {
     // Return limited data for private profiles
     const limitedUserData = {
+      _id: user._id.toString(), // Ensure this is properly converted to string
       username: user.username,
       name: user.name,
       picture: user.picture,
       visibility: user.visibility,
       bio: "This profile is private",
       rating: user.rating,
-      status: "Connect", // Default status for private profiles
-      // Don't include sensitive information
+      status: status,
       skillsProficientAt: [],
       skillsToLearn: [],
       education: [],
@@ -55,24 +67,19 @@ export const UserDetails = asyncHandler(async (req, res) => {
       .json(new ApiResponse(200, limitedUserData, "Private profile - limited information available"));
   }
 
-  // For public profiles or owner viewing their own profile
-  const request = await Request.find({
-    $or: [
-      { sender: senderID, receiver: receiverID },
-      { sender: receiverID, receiver: senderID },
-    ],
-  });
-
-  const status = request.length > 0 ? request[0].status : "Connect";
-
   // Remove email from the response for privacy
   const userData = user.toObject();
   delete userData.email;
 
+  // Ensure _id is included in the response
+  userData._id = user._id.toString();
+  userData.status = status;
+
   return res
     .status(200)
-    .json(new ApiResponse(200, { ...userData, status: status }, "User details fetched successfully"));
+    .json(new ApiResponse(200, userData, "User details fetched successfully"));
 });
+
 
 export const UnRegisteredUserDetails = asyncHandler(async (req, res) => {
   console.log("\n******** Inside UnRegisteredUserDetails Controller function ********");
@@ -323,8 +330,17 @@ export const registerUser = async (req, res) => {
 export const saveRegRegisteredUser = asyncHandler(async (req, res) => {
   console.log("******** Inside saveRegRegisteredUser Function *******");
 
-  const { name, username, linkedinLink, githubLink, portfolioLink, skillsProficientAt, skillsToLearn, picture, visibility } =
-    req.body;
+  const {
+    name,
+    username,
+    linkedinLink,
+    githubLink,
+    portfolioLink,
+    skillsProficientAt,
+    skillsToLearn,
+    picture,
+    visibility,
+  } = req.body;
 
   console.log("Body: ", req.body);
 
@@ -652,4 +668,35 @@ export const updateProfileVisibility = asyncHandler(async (req, res) => {
   const updatedUser = await User.findByIdAndUpdate(req.user._id, { visibility }, { new: true }).select("-email");
 
   return res.status(200).json(new ApiResponse(200, updatedUser, "Profile visibility updated successfully"));
+});
+
+export const createRequest = asyncHandler(async (req, res) => {
+  const { receiverID } = req.body;
+  
+  // Check if the receiver exists
+  const receiver = await User.findById(receiverID);
+  if (!receiver) {
+    throw new ApiError(404, "Receiver not found");
+  }
+
+  // Check if a connection request already exists between the users
+  const existingRequest = await Request.findOne({
+    $or: [
+      { sender: req.user._id, receiver: receiverID },
+      { sender: receiverID, receiver: req.user._id },
+    ],
+  });
+
+  if (existingRequest) {
+    throw new ApiError(400, "Connection request already exists");
+  }
+
+  // Create new connection request
+  const newRequest = await Request.create({
+    sender: req.user._id,
+    receiver: receiverID,
+    status: "Pending",
+  });
+
+  return res.status(200).json(new ApiResponse(200, newRequest, "Connection request sent successfully"));
 });

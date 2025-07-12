@@ -7,30 +7,34 @@ import { generateJWTToken_username } from "../utils/generateJWTToken.js";
 import { Request } from "../models/request.model.js";
 import { Chat } from "../models/chat.model.js";
 
-export const createRequest = asyncHandler(async (req, res, next) => {
-  console.log("\n******** Inside createRequest Controller function ********");
+// export const createRequest = asyncHandler(async (req, res, next) => {
+//   console.log("\n******** Inside createRequest Controller function ********");
 
-  const { receiverID } = req.body;
-  const senderID = req.user._id;
+//   const { receiverID } = req.body;
+//   const senderID = req.user._id;
 
-  console.log("Sender ID: ", senderID);
-  console.log("Receiver ID: ", receiverID);
+//   console.log("Sender ID: ", senderID);
+//   console.log("Receiver ID: ", receiverID);
 
-  const existingRequest = await Request.find({ sender: senderID, receiver: receiverID });
+//   if (!receiverID) {
+//     throw new ApiError(400, "Receiver ID is required");
+//   }
 
-  if (existingRequest.length > 0) {
-    throw new ApiError(400, "Request already exists");
-  }
+//   const existingRequest = await Request.find({ sender: senderID, receiver: receiverID });
 
-  const receiver = await Request.create({
-    sender: senderID,
-    receiver: receiverID,
-  });
+//   if (existingRequest.length > 0) {
+//     throw new ApiError(400, "Request already exists");
+//   }
 
-  if (!receiver) return next(new ApiError(500, "Request not created"));
+//   const receiver = await Request.create({
+//     sender: senderID,
+//     receiver: receiverID,
+//   });
 
-  res.status(201).json(new ApiResponse(201, receiver, "Request created successfully"));
-});
+//   if (!receiver) return next(new ApiError(500, "Request not created"));
+
+//   res.status(201).json(new ApiResponse(201, receiver, "Request created successfully"));
+// });
 
 export const getRequests = asyncHandler(async (req, res, next) => {
   console.log("\n******** Inside getRequests Controller function ********");
@@ -108,4 +112,35 @@ export const rejectRequest = asyncHandler(async (req, res, next) => {
   await Request.findOneAndUpdate({ sender: requestId, receiver: senderId }, { status: "Rejected" });
 
   res.status(200).json(new ApiResponse(200, null, "Request rejected successfully"));
+});
+
+export const createRequest = asyncHandler(async (req, res) => {
+  const { receiverID } = req.body;
+  
+  // Check if the receiver exists
+  const receiver = await User.findById(receiverID);
+  if (!receiver) {
+    throw new ApiError(404, "Receiver not found");
+  }
+
+  // Check if a connection request already exists between the users
+  const existingRequest = await Request.findOne({
+    $or: [
+      { sender: req.user._id, receiver: receiverID },
+      { sender: receiverID, receiver: req.user._id },
+    ],
+  });
+
+  if (existingRequest) {
+    throw new ApiError(400, "Connection request already exists");
+  }
+
+  // Create new connection request
+  const newRequest = await Request.create({
+    sender: req.user._id,
+    receiver: receiverID,
+    status: "Pending",
+  });
+
+  return res.status(200).json(new ApiResponse(200, newRequest, "Connection request sent successfully"));
 });

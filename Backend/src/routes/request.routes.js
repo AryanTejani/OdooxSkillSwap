@@ -8,5 +8,5 @@ router.post("/create", verifyJWT_username, createRequest);
 router.get("/getRequests", verifyJWT_username, getRequests);
 router.post("/acceptRequest", verifyJWT_username, acceptRequest);
 router.post("/rejectRequest", verifyJWT_username, rejectRequest);
-
+router.post("/create", verifyJWT_username, createRequest); 
 export default router;

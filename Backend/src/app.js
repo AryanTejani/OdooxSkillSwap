@@ -35,7 +35,7 @@ import messageRouter from "./routes/message.routes.js";
 import requestRouter from "./routes/request.routes.js";
 import reportRouter from "./routes/report.routes.js";
 import ratingRouter from "./routes/rating.routes.js";
-
+// import requestRouter from "./routes/request.route.js"
 // Using routes
 app.use("/user", userRouter);
 app.use("/auth", authRouter);
@@ -44,5 +44,5 @@ app.use("/message", messageRouter);
 app.use("/request", requestRouter);
 app.use("/report", reportRouter);
 app.use("/rating", ratingRouter);
-
+app.use("/create",requestRouter);
 export { app };

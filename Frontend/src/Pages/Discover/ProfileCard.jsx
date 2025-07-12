@@ -9,14 +9,14 @@ const ProfileCard = ({ profileImageUrl, bio, name, skills, rating, username, vis
     <div className="card-container">
       <img className="img-container" src={profileImageUrl} alt="user" />
       <h3>
-        {name} 
+        {name}
         {visibility === "private" && (
-          <FaLock 
-            style={{ 
-              marginLeft: "8px", 
-              fontSize: "0.8em", 
-              color: "#999" 
-            }} 
+          <FaLock
+            style={{
+              marginLeft: "8px",
+              fontSize: "0.8em",
+              color: "#999",
+            }}
             title="Private Profile"
           />
         )}
@@ -28,13 +28,15 @@ const ProfileCard = ({ profileImageUrl, bio, name, skills, rating, username, vis
           <button className="primary ghost">View Profile</button>
         </Link>
         {visibility === "private" && (
-          <div style={{ 
-            fontSize: "0.8em", 
-            color: "#999", 
-            marginTop: "5px",
-            textAlign: "center"
-          }}>
-            This profile is private
+          <div
+            style={{
+              fontSize: "0.8em",
+              color: "#999",
+              marginTop: "5px",
+              textAlign: "center",
+            }}
+          >
+            🔒 Private Profile - Connect to see more
           </div>
         )}
       </div>
