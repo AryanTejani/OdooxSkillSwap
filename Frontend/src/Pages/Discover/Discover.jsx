@@ -79,9 +79,7 @@ const Discover = () => {
     <>
       <div className="discover-page">
         <div className="content-container">
-          <div className="nav-bar">
-            {/* ... (keep existing nav code) */}
-          </div>
+          <div className="nav-bar">{/* ... (keep existing nav code) */}</div>
           <div className="heading-container">
             {loading ? (
               <div className="container d-flex justify-content-center align-items-center" style={{ height: "50vh" }}>
@@ -112,13 +110,16 @@ const Discover = () => {
                         skills={user?.skillsProficientAt}
                         username={user?.username}
                         visibility={user?.visibility} // Add this prop
+                        skillsKnown={user.skillsKnown || []}
+                        skillsWantToLearn={user.skillsWantToLearn || []}
+                        availability={user.availability || ""}
                       />
                     ))
                   ) : (
                     <h1 style={{ color: "#fbf1a4" }}>No users to show</h1>
                   )}
                 </div>
-                
+
                 <h1
                   id="popular"
                   style={{
@@ -130,7 +131,7 @@ const Discover = () => {
                 >
                   Popular
                 </h1>
-                
+
                 <h2 id="web-development">Web Development</h2>
                 <div className="profile-cards">
                   {webDevUsers && webDevUsers.length > 0 ? (
@@ -150,7 +151,7 @@ const Discover = () => {
                     <h1 style={{ color: "#fbf1a4" }}>No users to show</h1>
                   )}
                 </div>
-                
+
                 <h2 id="machine-learning">Machine Learning</h2>
                 <div className="profile-cards">
                   {mlUsers && mlUsers.length > 0 ? (
@@ -170,7 +171,7 @@ const Discover = () => {
                     <h1 style={{ color: "#fbf1a4" }}>No users to show</h1>
                   )}
                 </div>
-                
+
                 <h2 id="others">Others</h2>
                 <div className="profile-cards">
                   {otherUsers && otherUsers.length > 0 ? (

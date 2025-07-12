@@ -55,6 +55,9 @@ export const UserDetails = asyncHandler(async (req, res) => {
       status: status,
       skillsProficientAt: [],
       skillsToLearn: [],
+      skillsKnown: [],
+      skillsWantToLearn: [],
+      availability: "everyday",
       education: [],
       projects: [],
       linkedinLink: "",
@@ -75,11 +78,8 @@ export const UserDetails = asyncHandler(async (req, res) => {
   userData._id = user._id.toString();
   userData.status = status;
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, userData, "User details fetched successfully"));
+  return res.status(200).json(new ApiResponse(200, userData, "User details fetched successfully"));
 });
-
 
 export const UnRegisteredUserDetails = asyncHandler(async (req, res) => {
   console.log("\n******** Inside UnRegisteredUserDetails Controller function ********");
@@ -227,6 +227,9 @@ export const registerUser = async (req, res) => {
     portfolioLink,
     skillsProficientAt,
     skillsToLearn,
+    skillsKnown,
+    skillsWantToLearn,
+    availability,
     education,
     bio,
     projects,
@@ -308,6 +311,9 @@ export const registerUser = async (req, res) => {
     visibility: req.body.visibility || "public",
     skillsProficientAt: skillsProficientAt,
     skillsToLearn: skillsToLearn,
+    skillsKnown: skillsKnown,
+    skillsWantToLearn: skillsWantToLearn,
+    availability: availability,
     education: education,
     bio: bio,
     projects: projects,
@@ -338,6 +344,9 @@ export const saveRegRegisteredUser = asyncHandler(async (req, res) => {
     portfolioLink,
     skillsProficientAt,
     skillsToLearn,
+    skillsKnown,
+    skillsWantToLearn,
+    availability,
     picture,
     visibility,
   } = req.body;
@@ -372,6 +381,9 @@ export const saveRegRegisteredUser = asyncHandler(async (req, res) => {
       portfolioLink: portfolioLink,
       skillsProficientAt: skillsProficientAt,
       skillsToLearn: skillsToLearn,
+      skillsKnown: skillsKnown,
+      skillsWantToLearn: skillsWantToLearn,
+      availability: availability,
       picture: picture,
       visibility: visibility || "public",
     }
@@ -595,7 +607,7 @@ export const discoverUsers = asyncHandler(async (req, res) => {
 
   // Fetch all users except the current user, including visibility field
   const users = await User.find({ username: { $ne: req.user.username } }).select(
-    "username name picture bio rating skillsProficientAt visibility"
+    "username name picture bio rating skillsProficientAt skillsKnown skillsToLearn skillsWantToLearn availability visibility"
   );
 
   if (!users) {
@@ -672,7 +684,7 @@ export const updateProfileVisibility = asyncHandler(async (req, res) => {
 
 export const createRequest = asyncHandler(async (req, res) => {
   const { receiverID } = req.body;
-  
+
   // Check if the receiver exists
   const receiver = await User.findById(receiverID);
   if (!receiver) {

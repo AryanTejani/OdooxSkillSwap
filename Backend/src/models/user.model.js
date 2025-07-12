@@ -52,6 +52,29 @@ const userSchema = new Schema(
         default: "",
       },
     ],
+    // NEW FIELDS
+    skillsKnown: [
+      {
+        type: String,
+        default: "",
+      },
+    ],
+    skillsWantToLearn: [
+      {
+        type: String,
+        default: "",
+      },
+    ],
+    availability: {
+      type: String,
+      enum: ["everyday", "weekend", "weekday", "custom"],
+      default: "everyday",
+    },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
     education: [
       {
         institution: {
@@ -117,6 +140,5 @@ const userSchema = new Schema(
   },
   { timestamps: true }
 );
-
 
 export const User = mongoose.model("User", userSchema);

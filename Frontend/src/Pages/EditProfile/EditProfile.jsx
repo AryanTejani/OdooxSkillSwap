@@ -29,6 +29,9 @@ const EditProfile = () => {
     visibility: "public",
     skillsProficientAt: [],
     skillsToLearn: [],
+    skillsKnown: [],
+    skillsWantToLearn: [],
+    availability: "everyday",
     education: [
       {
         id: uuidv4(),
@@ -58,6 +61,9 @@ const EditProfile = () => {
         username: user?.username,
         skillsProficientAt: user?.skillsProficientAt,
         skillsToLearn: user?.skillsToLearn,
+        skillsKnown: user?.skillsKnown || [],
+        skillsWantToLearn: user?.skillsWantToLearn || [],
+        availability: user?.availability || "everyday",
         portfolioLink: user?.portfolioLink,
         githubLink: user?.githubLink,
         linkedinLink: user?.linkedinLink,
@@ -639,9 +645,11 @@ const EditProfile = () => {
                   Add Skill
                 </button>
               </div>
-              {/* Skills to learn */}
+              {/* Skills Want To Learn */}
               <div>
-                <label style={{ color: "#3BB4A1", marginTop: "20px" }}>Skills To Learn</label>
+                <label className="mt-3" style={{ color: "#3BB4A1" }}>
+                  Skills Want To Learn
+                </label>
                 <br />
                 <Form.Select
                   aria-label="Default select example"
@@ -655,24 +663,62 @@ const EditProfile = () => {
                     </option>
                   ))}
                 </Form.Select>
-                {form?.skillsToLearn?.length > 0 && (
+                {form?.skillsWantToLearn?.length > 0 && (
                   <div>
-                    {form.skillsToLearn.map((skill, index) => (
+                    {form.skillsWantToLearn.map((skill, index) => (
                       <Badge
                         key={index}
                         bg="secondary"
-                        className="ms-2 mt-2 "
+                        className="ms-2 mt-2"
                         style={{ cursor: "pointer" }}
-                        onClick={(event) => handleRemoveSkill(event, "skills_to_learn")}
+                        onClick={() =>
+                          setForm((prevState) => ({
+                            ...prevState,
+                            skillsWantToLearn: prevState.skillsWantToLearn.filter((item) => item !== skill),
+                          }))
+                        }
                       >
                         <div className="span d-flex p-1 fs-7 ">{skill} &#10005;</div>
                       </Badge>
                     ))}
                   </div>
                 )}
-                <button className="btn btn-primary mt-3 ms-1" name="skill_to_learn" onClick={handleAddSkill}>
+                <button
+                  className="btn btn-primary mt-3 ms-1"
+                  onClick={() => {
+                    if (skillsToLearn !== "Select some skill" && !form.skillsWantToLearn.includes(skillsToLearn)) {
+                      setForm((prevState) => ({
+                        ...prevState,
+                        skillsWantToLearn: [...prevState.skillsWantToLearn, skillsToLearn],
+                      }));
+                    }
+                  }}
+                >
                   Add Skill
                 </button>
+              </div>
+              {/* Availability */}
+              <div>
+                <label className="mt-3" style={{ color: "#3BB4A1" }}>
+                  Availability
+                </label>
+                <br />
+                <Form.Select
+                  name="availability"
+                  value={form.availability}
+                  onChange={handleInputChange}
+                  style={{
+                    borderRadius: "5px",
+                    border: "1px solid #3BB4A1",
+                    padding: "5px",
+                    width: "100%",
+                  }}
+                >
+                  <option value="everyday">Everyday</option>
+                  <option value="weekend">Weekend</option>
+                  <option value="weekday">Weekday</option>
+                  <option value="custom">Custom</option>
+                </Form.Select>
               </div>
               <div className="row m-auto d-flex justify-content-center mt-3">
                 <button className="btn btn-warning" onClick={handleSaveRegistration} disabled={saveLoading}>

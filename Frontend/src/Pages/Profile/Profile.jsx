@@ -15,6 +15,7 @@ const Profile = () => {
   const { username } = useParams();
   const [loading, setLoading] = useState(true);
   const [connectLoading, setConnectLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -89,6 +90,32 @@ const Profile = () => {
     }
   };
 
+  const deleteUserHandler = async () => {
+    if (!window.confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      setDeleteLoading(true);
+      const { data } = await axios.delete(`/report/delete-user/${username}`);
+      toast.success(data.message);
+      navigate("/discover");
+    } catch (error) {
+      console.log(error);
+      if (error?.response?.data?.message) {
+        toast.error(error.response.data.message);
+        if (error.response.data.message === "Please Login") {
+          localStorage.removeItem("userInfo");
+          setUser(null);
+          await axios.get("/auth/logout");
+          navigate("/login");
+        }
+      }
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   return (
     <div className="profile-container">
       <div className="container" style={{ minHeight: "86vh" }}>
@@ -150,6 +177,13 @@ const Profile = () => {
                       profileUser?.status
                     )}
                   </button>
+
+                  {/* Report Button - Only show if not viewing own profile */}
+                  {user.username !== username && (
+                    <Link to={`/report/${username}`}>
+                      <button className="report-button">Report User ⚠️</button>
+                    </Link>
+                  )}
                 </div>
               </div>
               <div className="edit-links">
@@ -157,6 +191,20 @@ const Profile = () => {
                   <Link to="/edit_profile">
                     <button className="edit-button">Edit Profile ✎</button>
                   </Link>
+                )}
+
+                {/* Admin Delete Button */}
+                {user?.role === "admin" && user.username !== username && (
+                  <button className="delete-button" onClick={deleteUserHandler} disabled={deleteLoading}>
+                    {deleteLoading ? (
+                      <>
+                        <Spinner animation="border" variant="light" size="sm" style={{ marginRight: "0.5rem" }} />
+                        Deleting...
+                      </>
+                    ) : (
+                      "Delete User 🗑️"
+                    )}
+                  </button>
                 )}
 
                 {/* Portfolio Links */}
@@ -223,6 +271,40 @@ const Profile = () => {
                   </div>
                 ) : (
                   <div style={{ color: "#6c757d", fontStyle: "italic" }}>No skills listed yet.</div>
+                )}
+              </div>
+            </div>
+
+            {/* Skills Want To Learn */}
+            <div className="skills">
+              <h2>Skills Want To Learn</h2>
+              <div className="skill-boxes">
+                {profileUser?.skillsWantToLearn && profileUser?.skillsWantToLearn.length > 0 ? (
+                  profileUser?.skillsWantToLearn.map((skill, index) => (
+                    <div className="skill-box" style={{ fontSize: "16px" }} key={index}>
+                      {skill}
+                    </div>
+                  ))
+                ) : profileUser?.visibility === "private" && profileUser?.bio === "This profile is private" ? (
+                  <div style={{ color: "#6c757d", fontStyle: "italic" }}>
+                    Skills information is private. Connect to view skills.
+                  </div>
+                ) : (
+                  <div style={{ color: "#6c757d", fontStyle: "italic" }}>No skills listed yet.</div>
+                )}
+              </div>
+            </div>
+
+            {/* Availability */}
+            <div className="skills">
+              <h2>Availability</h2>
+              <div className="skill-boxes">
+                {profileUser?.availability ? (
+                  <div className="skill-box" style={{ fontSize: "16px" }}>
+                    {profileUser.availability.charAt(0).toUpperCase() + profileUser.availability.slice(1)}
+                  </div>
+                ) : (
+                  <div style={{ color: "#6c757d", fontStyle: "italic" }}>No availability set.</div>
                 )}
               </div>
             </div>

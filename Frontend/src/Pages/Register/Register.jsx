@@ -26,6 +26,9 @@ const Register = () => {
     visibility: "public",
     skillsProficientAt: [],
     skillsToLearn: [],
+    skillsKnown: [],
+    skillsWantToLearn: [],
+    availability: "everyday",
     education: [
       {
         id: uuidv4(),
@@ -82,6 +85,9 @@ const Register = () => {
           username: data?.data?.username,
           skillsProficientAt: data?.data?.skillsProficientAt,
           skillsToLearn: data?.data?.skillsToLearn,
+          skillsKnown: data?.data?.skillsKnown || [],
+          skillsWantToLearn: data?.data?.skillsWantToLearn || [],
+          availability: data?.data?.availability || "everyday",
           linkedinLink: data?.data?.linkedinLink,
           githubLink: data?.data?.githubLink,
           portfolioLink: data?.data?.portfolioLink,
@@ -639,6 +645,133 @@ const Register = () => {
                   Add Skill
                 </button>
               </div>
+              {/* Skills Known */}
+              <div>
+                <label className="mt-3" style={{ color: "#3BB4A1" }}>
+                  Skills Known
+                </label>
+                <br />
+                <Form.Select
+                  aria-label="Default select example"
+                  value={skillsProficientAt}
+                  onChange={(e) => setSkillsProficientAt(e.target.value)}
+                >
+                  <option>Select some skill</option>
+                  {skills.map((skill, index) => (
+                    <option key={index} value={skill}>
+                      {skill}
+                    </option>
+                  ))}
+                </Form.Select>
+                {form?.skillsKnown?.length > 0 && (
+                  <div>
+                    {form.skillsKnown.map((skill, index) => (
+                      <Badge
+                        key={index}
+                        bg="secondary"
+                        className="ms-2 mt-2"
+                        style={{ cursor: "pointer" }}
+                        onClick={() =>
+                          setForm((prevState) => ({
+                            ...prevState,
+                            skillsKnown: prevState.skillsKnown.filter((item) => item !== skill),
+                          }))
+                        }
+                      >
+                        <div className="span d-flex p-1 fs-7 ">{skill} &#10005;</div>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                <button
+                  className="btn btn-primary mt-3 ms-1"
+                  onClick={() => {
+                    if (skillsProficientAt !== "Select some skill" && !form.skillsKnown.includes(skillsProficientAt)) {
+                      setForm((prevState) => ({
+                        ...prevState,
+                        skillsKnown: [...prevState.skillsKnown, skillsProficientAt],
+                      }));
+                    }
+                  }}
+                >
+                  Add Skill
+                </button>
+              </div>
+              {/* Skills Want To Learn */}
+              <div>
+                <label className="mt-3" style={{ color: "#3BB4A1" }}>
+                  Skills Want To Learn
+                </label>
+                <br />
+                <Form.Select
+                  aria-label="Default select example"
+                  value={skillsToLearn}
+                  onChange={(e) => setSkillsToLearn(e.target.value)}
+                >
+                  <option>Select some skill</option>
+                  {skills.map((skill, index) => (
+                    <option key={index} value={skill}>
+                      {skill}
+                    </option>
+                  ))}
+                </Form.Select>
+                {form?.skillsWantToLearn?.length > 0 && (
+                  <div>
+                    {form.skillsWantToLearn.map((skill, index) => (
+                      <Badge
+                        key={index}
+                        bg="secondary"
+                        className="ms-2 mt-2"
+                        style={{ cursor: "pointer" }}
+                        onClick={() =>
+                          setForm((prevState) => ({
+                            ...prevState,
+                            skillsWantToLearn: prevState.skillsWantToLearn.filter((item) => item !== skill),
+                          }))
+                        }
+                      >
+                        <div className="span d-flex p-1 fs-7 ">{skill} &#10005;</div>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                <button
+                  className="btn btn-primary mt-3 ms-1"
+                  onClick={() => {
+                    if (skillsToLearn !== "Select some skill" && !form.skillsWantToLearn.includes(skillsToLearn)) {
+                      setForm((prevState) => ({
+                        ...prevState,
+                        skillsWantToLearn: [...prevState.skillsWantToLearn, skillsToLearn],
+                      }));
+                    }
+                  }}
+                >
+                  Add Skill
+                </button>
+              </div>
+              {/* Availability */}
+              <div>
+                <label className="mt-3" style={{ color: "#3BB4A1" }}>
+                  Availability
+                </label>
+                <br />
+                <Form.Select
+                  name="availability"
+                  value={form.availability}
+                  onChange={handleInputChange}
+                  style={{
+                    borderRadius: "5px",
+                    border: "1px solid #3BB4A1",
+                    padding: "5px",
+                    width: "100%",
+                  }}
+                >
+                  <option value="everyday">Everyday</option>
+                  <option value="weekend">Weekend</option>
+                  <option value="weekday">Weekday</option>
+                  <option value="custom">Custom</option>
+                </Form.Select>
+              </div>
               <div className="row m-auto d-flex justify-content-center mt-3">
                 <button className="btn btn-warning" onClick={handleSaveRegistration} disabled={saveLoading}>
                   {saveLoading ? <Spinner animation="border" variant="primary" /> : "Save"}
@@ -1030,7 +1163,10 @@ const Register = () => {
                 <h3 style={{ color: "#3BB4A1", marginBottom: "20px" }} className="link w-100 text-center">
                   Preview of the Form
                 </h3>
-                <div className="previewForm" style={{ fontFamily: "Montserrat, sans-serif", color: "#2d2d2d", marginBottom: "20px" }}>
+                <div
+                  className="previewForm"
+                  style={{ fontFamily: "Montserrat, sans-serif", color: "#2d2d2d", marginBottom: "20px" }}
+                >
                   <div
                     style={{
                       display: "flex",
@@ -1148,7 +1284,32 @@ const Register = () => {
                     <span style={{ flex: 1, fontWeight: "bold", color: "#3BB4A1" }}>Skills To Learn:</span>
                     <span style={{ flex: 2 }}>{form.skillsToLearn.join(", ") || "Yet to be filled"}</span>
                   </div>
-
+                  <div
+                    style={{
+                      display: "flex",
+                      width: "70vw",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: "1.5rem",
+                    }}
+                    className="link"
+                  >
+                    <span style={{ flex: 1, fontWeight: "bold", color: "#3BB4A1" }}>Skills Known:</span>
+                    <span style={{ flex: 2 }}>{form.skillsKnown.join(", ") || "Yet to be filled"}</span>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      width: "70vw",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: "1.5rem",
+                    }}
+                    className="link"
+                  >
+                    <span style={{ flex: 1, fontWeight: "bold", color: "#3BB4A1" }}>Skills Want To Learn:</span>
+                    <span style={{ flex: 2 }}>{form.skillsWantToLearn.join(", ") || "Yet to be filled"}</span>
+                  </div>
                   <div
                     style={{
                       display: "flex",

@@ -4,7 +4,18 @@ import "./Card.css";
 import { Link } from "react-router-dom";
 import { FaLock } from "react-icons/fa"; // Add this import
 
-const ProfileCard = ({ profileImageUrl, bio, name, skills, rating, username, visibility }) => {
+const ProfileCard = ({
+  profileImageUrl,
+  bio,
+  name,
+  skills,
+  rating,
+  username,
+  visibility,
+  skillsKnown,
+  skillsWantToLearn,
+  availability,
+}) => {
   return (
     <div className="card-container">
       <img className="img-container" src={profileImageUrl} alt="user" />
@@ -50,6 +61,46 @@ const ProfileCard = ({ profileImageUrl, bio, name, skills, rating, username, vis
           ))}
         </div>
       </div>
+
+      {/* Skills Known */}
+      {Array.isArray(skillsKnown) && skillsKnown.length > 0 && (
+        <div className="profskills">
+          <h6>Skills Known</h6>
+          <div className="profskill-boxes">
+            {skillsKnown.map((skill, index) => (
+              <div key={index} className="profskill-box">
+                <span className="skill">{skill}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Skills Want To Learn */}
+      {Array.isArray(skillsWantToLearn) && skillsWantToLearn.length > 0 && (
+        <div className="profskills">
+          <h6>Skills Want To Learn</h6>
+          <div className="profskill-boxes">
+            {skillsWantToLearn.map((skill, index) => (
+              <div key={index} className="profskill-box">
+                <span className="skill">{skill}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Availability */}
+      {availability && (
+        <div className="profskills">
+          <h6>Availability</h6>
+          <div className="profskill-boxes">
+            <div className="profskill-box">
+              <span className="skill">{availability.charAt(0).toUpperCase() + availability.slice(1)}</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
